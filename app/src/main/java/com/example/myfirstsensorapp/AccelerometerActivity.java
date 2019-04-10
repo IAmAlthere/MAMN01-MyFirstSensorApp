@@ -12,7 +12,6 @@ import android.os.Vibrator;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.TextView;
 
 public class AccelerometerActivity extends AppCompatActivity implements SensorEventListener {
@@ -20,12 +19,10 @@ public class AccelerometerActivity extends AppCompatActivity implements SensorEv
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
     private float[] mLastAccelerometer = new float[3];
-    private boolean mLastAccelerometerSet = false;
     private boolean haveSensor;
     private TextView x_coords;
     private TextView y_coords;
     private TextView z_coords;
-    static final float ALPHA = 0.9f;
     private TextView phoneInfo;
     private boolean hasVibrated = false;
     private boolean focused = false;
@@ -78,7 +75,6 @@ public class AccelerometerActivity extends AppCompatActivity implements SensorEv
         if(mLastAccelerometer[2] < -2){
             phoneRotation.append("Mobilen är riktad neråt \n");
             hasVibrated = false;
-            //this.getWindow().getDecorView().setBackgroundColor(getColor(R.color.white));
         }else if(mLastAccelerometer[2] > 2){
             phoneRotation.append("Mobilen är riktad uppåt \n");
             if (focused && !hasVibrated) {
@@ -86,15 +82,15 @@ public class AccelerometerActivity extends AppCompatActivity implements SensorEv
                 hasVibrated = true;
                 cat_sound.start();
             }
-            //this.getWindow().getDecorView().setBackgroundColor(getColor(R.color.red));
         } else {
             phoneRotation.append("Mobilen är upprät \n");
             hasVibrated = false;
-            //this.getWindow().getDecorView().setBackgroundColor(getColor(R.color.white));
         }
+        //Calculates the hexadecimal number of the values from the accelerometer
         String hexa = calcToHexa(mLastAccelerometer);
         hexa = hexa.length() <= 5 ? "#0" + hexa :  "#" + hexa;
         phoneInfo.setText(phoneRotation.toString() + hexa);
+        //Calculates the color based on the values from the accelerometer
         int[] color = calcColor(mLastAccelerometer);
         this.getWindow().getDecorView().setBackgroundColor(Color.argb(255,
                 color[0] <= 255 ? color[0] : 255,
@@ -134,15 +130,24 @@ public class AccelerometerActivity extends AppCompatActivity implements SensorEv
         alertDialog.show();
     }
 
+    /**
+     * Calculates the hexadecimal value of a float array for usage as colors. Based on gravity
+     * @param values float vector from an accelerometer
+     * @return string corresponding to the hexadecimal value of the float array as a color
+     */
     private String calcToHexa(float[] values) {
         double redDouble = Math.ceil(Math.abs(values[0]/gravity)*255);
         double greenDouble = Math.ceil(Math.abs(values[1]/gravity)*255);
         double blueDouble = Math.ceil(Math.abs(values[2]/gravity)*255);
         double result = Math.pow(255.0,2.0)*redDouble + 255*greenDouble + blueDouble;
-        //return Double.toHexString(result);
         return Integer.toString(Double.valueOf(result).intValue(), 16);
     }
 
+    /**
+     * Converts a float array range 0 - Earths gravity to a int vector range 0 - 255 corresponding to a color
+     * @param values float array from an accelerometer
+     * @return int array corresponding to a color
+     */
     private int[] calcColor(float[] values) {
         int redDouble = Double.valueOf(Math.ceil(Math.abs(values[0]/gravity)*255)).intValue();
         int greenDouble = Double.valueOf(Math.ceil(Math.abs(values[1]/gravity)*255)).intValue();
